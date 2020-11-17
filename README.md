@@ -8,5 +8,5 @@ Social media use has spiked around the world during the COVID-19 global pandemic
 
 ## Data Sharing
 
-Data for this project are available upon request through Open Science Framework (https://osf.io/).
+Data for this project are available upon request through Open Science Framework (https://osf.io/gpc2d).
 

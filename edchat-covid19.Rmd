@@ -20,7 +20,7 @@ library(seriation)
 
 ## Look at all #Edchat tweets during COVID-19 (March-May 2020) vs. a year earlier (March-May 2019)
 
-**Note:** These two .csv files are available upon request from https://osf.io/
+**Note:** These two .csv files are available upon request from https://osf.io/. Upon retrieval  from OSF, put the files in the same directory as the R markdown file you are currently reading. This file should be fully functional then.
 
 ```{r, include=FALSE, message=FALSE}
 tweet_data_2020_0 <- 
