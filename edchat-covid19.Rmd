@@ -24,14 +24,14 @@ library(seriation)
 
 ```{r, include=FALSE, message=FALSE}
 tweet_data_2020_0 <- 
-  read_csv("tweets-2020-mar-may.csv", 
+  read_csv("edchat-tweets-2020-mar-may.csv", 
            col_types = cols(status_id = col_character(),
                             user_id = col_character()
            )
   )
 
 tweet_data_2019_0 <- 
-  read_csv("tweets-2019-mar-may.csv", 
+  read_csv("edchat-tweets-2019-mar-may.csv", 
            col_types = cols(status_id = col_character(),
                             user_id = col_character()
            )
@@ -479,6 +479,7 @@ top_terms_2020q <-
   arrange(topic, -beta) %>%
   mutate(topic = str_c("2020-", topic))
 
+
 #top_terms_2020$term <- 
 #  factor(top_terms_2020$term, levels = sort(unique(top_terms_2020$term)))
 ```
@@ -530,41 +531,45 @@ topics_orderedq <-
 
 top_terms_2019_2020_to_plotq <-
   top_terms_2019_2020q %>%
-  mutate(topic = factor(topic, levels = unique(top_terms_2019_2020q$topic)),  # topics_orderedq
-         term = factor(term, levels = terms_orderedq)
+  mutate(topic = factor(topic, levels = unique(top_terms_2019_2020q$topic)),
+         term = factor(term, levels = terms_orderedq),
+         year = sub("-[0-9]", "", topic),
+         topic = sub("20[0-9][0-9]-", "", topic)
   )
 ```
 
 ```{r, echo=FALSE, fig.width=16, fig.height=12}
 ggplot(top_terms_2019_2020_to_plotq, aes(x = topic, y = term)) +
-        geom_tile(aes(fill = beta), color = 'white', size = 0.2) + 
-        scale_fill_viridis(rescaler = function(x, to = c(0, 1), from = NULL) {
-                ifelse(x < .012, 
-                       scales::rescale(x,
-                                       to = to,
-                                       from = c(min(x, na.rm = TRUE), .012)), 
-                       1)
-        }
-        ) +
-        xlab("Topic") +
-        scale_x_discrete(position='bottom') +
-        ylab("Term") +
-        scale_y_discrete(position='right') +
-        theme_bw() +
-        theme(axis.title = element_text(size=28, family='serif'),
-              axis.text = element_text(size=20, family='serif'),
-              legend.title = element_text(size=14, family='serif'), 
-              legend.text = element_text(size=14, family='serif'),
-              legend.position='left',
-              legend.background = element_blank(),
-              legend.box.background = element_rect(colour='black'),
-              panel.background = element_blank(),
-              panel.border = element_blank(),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              plot.background = element_blank()
-        ) +
-        labs(fill = "Topic-Word Density")
+  geom_tile(aes(fill = beta), color = 'white', size = 0.2) + 
+  scale_fill_viridis(rescaler = function(x, to = c(0, 1), from = NULL) {
+    ifelse(x < .012, 
+           scales::rescale(x,
+                           to = to,
+                           from = c(min(x, na.rm = TRUE), .012)), 
+           1)
+  }
+  ) +
+  facet_wrap(~ year) +
+  xlab("Topic") +
+  scale_x_discrete(position='bottom') +
+  ylab("Term") +
+  scale_y_discrete(position='right') +
+  theme_bw() +
+  theme(axis.title = element_text(size=28, family='serif'),
+        axis.text = element_text(size=20, family='serif'),
+        strip.text.x = element_text(size = 28, family='serif'),
+        legend.title = element_text(size=14, family='serif'), 
+        legend.text = element_text(size=14, family='serif'),
+        legend.position='left',
+        legend.background = element_blank(),
+        legend.box.background = element_rect(colour='black'),
+        panel.background = element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.background = element_rect(color = 'black')
+  ) +
+  labs(fill = "Topic-Word Density")
 ```
 
 ```{r, include=FALSE, eval=FALSE}
