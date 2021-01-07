@@ -11,6 +11,7 @@ usethis::use_git_ignore(c("*.csv", "*.rds", ".log"))
 library(tidyverse)
 library(anytime)
 library(lubridate)
+library(ggrepel)
 library(viridis)
 library(quanteda)
 library(topicmodels)
@@ -264,7 +265,6 @@ hashtag_table_2020 <-
   as_tibble() %>%
   rename(hashtag = ".",
          n_2020 = n) %>%
-  filter(hashtag != "edchat") %>%
   mutate(p_2020 = round(100 * n_2020 / n_orig_2020, 2),
          odds_2020 = (n_2020 / n_orig_2020) / ((n_orig_2020 - n_2020) / n_orig_2020)
   ) %>%
@@ -280,7 +280,6 @@ hashtag_table_2019 <-
   as_tibble() %>%
   rename(hashtag = ".",
          n_2019 = n) %>%
-  filter(hashtag != "edchat") %>%
   mutate(p_2019 = round(100 * n_2019 / n_orig_2019, 2),
          odds_2019 = (n_2019 / n_orig_2019) / ((n_orig_2019 - n_2019) / n_orig_2019)
   ) %>%
@@ -311,45 +310,51 @@ hashtag_comparison_table <-
 hashtags_comparison_plot <- 
   hashtag_comparison_table %>%
   mutate(log_odds_ratio = abs(log_odds_ratio)) %>%
-  filter(p_2020 >= 0.9 | p_2019 >= 0.9,
-         log_odds_ratio >= 0.35) %>%
-  arrange(-log_odds_ratio)
+  arrange(-log_odds_ratio) %>%
+  filter(log_odds_ratio >= 0.50,
+         p_2020 >= 0.9 | p_2019 >= 0.9)
 ```
 
 ```{r, echo=FALSE, warning=FALSE, fig.width=16, fig.height=9}
 ggplot(data = hashtags_comparison_plot, 
-       mapping = aes(x = odds_2019, y = odds_2020)) +
-  geom_point(alpha = 0.8, 
+       mapping = aes(x = p_2019, y = p_2020)) +
+  geom_point(alpha = 0.7, 
              size = 15,
              show.legend = TRUE,
-             aes(color = abs(log_odds_ratio))) +
+             aes(color = log_odds_ratio)) +
   scale_color_viridis(rescaler = function(x, to = c(0, 1), from = NULL) {
-      ifelse(x < 4, 
+      ifelse(x < 3, 
              scales::rescale(x,
                              to = to,
-                             from = c(min(x, na.rm = TRUE), 4)),
+                             from = c(min(x, na.rm = TRUE), 3)),
              1)
       }
       ) +
-  geom_text(aes(label = hashtag), 
-            check_overlap = TRUE,
-            nudge_y = 0,
-            nudge_x = 0.0075,
-            size = 7,
-            family = 'serif') +
+  ggrepel::geom_label_repel(data = filter(hashtags_comparison_plot, 
+                                         p_2020 >= 0.9 | p_2019 >= 0.9,
+                                         log_odds_ratio >= 0.40),
+                            aes(label = hashtag),
+                            show.legend = FALSE,
+                            size = 6,
+                            family = 'serif',
+                            check_overlap = TRUE,
+                            nudge_x = 0.25,
+                            nudge_y = 0.5
+  ) +
+  #geom_text(aes(label = hashtag), check_overlap = TRUE, nudge_y = 0, nudge_x = 0.0075, size = 7, family = 'serif') +
   geom_abline(color = "red") +
   theme_bw() + 
-  xlab("Odds (2019)") +
-  ylab("Odds (2020)") +
-  xlim(0, .14) +
-  ylim(0, .22) +
+  xlab("2019 percentage of #Edchat tweets containing hashtag") +
+  ylab("2020 percentage of #Edchat tweets containing hashtag") +
+  xlim(0, 5) +
+  ylim(0, 20) +
   geom_hline(yintercept = 0, color = "black") + 
   geom_vline(xintercept = 0, color = "black") +
   theme(panel.border = element_rect(color = "gray80"),
         panel.grid.major = element_line(color = "gray30"),
         panel.grid.minor = element_line(color = "gray80"),
-        axis.title=element_text(size=28, family='serif'),
-        axis.text=element_text(size=24, family='serif')
+        axis.title=element_text(size=24, family='serif'),
+        axis.text=element_text(size=18, family='serif')
   ) +
   labs(color = 'log odds ratio')
 ```
@@ -567,7 +572,7 @@ ggplot(top_terms_2019_2020_to_plotq, aes(x = topic, y = term)) +
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        plot.background = element_rect(color = 'black')
+        plot.background = element_blank()
   ) +
   labs(fill = "Topic-Word Density")
 ```
